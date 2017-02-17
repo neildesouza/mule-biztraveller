@@ -1,0 +1,16 @@
+{
+    "inputMessageMetadata": {
+        "messagePayload": {
+            "connectorName": "#_custom_mule_metadata_type_#",
+            "typeId": "Google_Calendar_Events"
+        }
+    },
+    "outputMessageMetadata": {
+        "messagePayload": {
+            "connectorName": "#_custom_mule_metadata_type_#",
+            "typeId": "BIzTraveller_Event"
+        }
+    },
+    "id": "5576b860-c352-4c9e-bfdb-e9a0856e62b8",
+    "version": "5.2.0.0"
+}

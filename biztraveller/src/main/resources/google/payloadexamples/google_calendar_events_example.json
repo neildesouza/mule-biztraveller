@@ -1,0 +1,42 @@
+{
+  "kind": "calendar#events",
+  "etag": "\"p330appsoke9t40g\"",
+  "summary": "Sample Calendar",
+  "description": "Sample Calendar",
+  "updated": "2017-02-15T23:40:03.048Z",
+  "timeZone": "Pacific/Auckland",
+  "accessRole": "reader",
+  "defaultReminders": [],
+  "nextSyncToken": "CMCs55ijk9ICEAAYAQ==",
+  "items": [
+    {
+      "kind": "calendar#event",
+      "etag": "\"2974404005804000\"",
+      "id": "053lblf53ghp941sdl3n2jugjg",
+      "status": "confirmed",
+      "htmlLink": "https://www.google.com/calendar/event?eid=MDUzbGJsZjUzZ2hwOTQxc2RsM24yanVnamcgNjF2ZnM4a2JkZm5rbTV2Mm1pMTJzYWFsZmdAZw",
+      "created": "2017-02-15T23:40:02.000Z",
+      "updated": "2017-02-15T23:40:02.902Z",
+      "summary": "Event A",
+      "description": "Event Test 1",
+      "location": "St. Paul's Cathedral, St. Paul's Churchyard, London EC4M 8AD, UK",
+      "creator": {
+        "email": "njpdesouza@gmail.com",
+        "displayName": "neil desouza"
+      },
+      "organizer": {
+        "email": "61vfs8kbdfnkm5v2mi12saalfg@group.calendar.google.com",
+        "displayName": "Sample Calendar",
+        "self": true
+      },
+      "start": {
+        "dateTime": "2017-02-17T02:30:00+13:00"
+      },
+      "end": {
+        "dateTime": "2017-02-17T03:30:00+13:00"
+      },
+      "iCalUID": "053lblf53ghp941sdl3n2jugjg@google.com",
+      "sequence": 0
+    }
+  ]
+}

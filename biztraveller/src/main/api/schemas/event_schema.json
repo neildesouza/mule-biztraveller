@@ -1,0 +1,23 @@
+{  
+ 	"$schema": "http://json-schema.org/draft-03/schema",
+ 	"title":"Event List",
+ 	"type": "array",
+ 	"items": {
+ 		"title":"Event",
+ 		"type":"object",
+ 		"properties": {
+		      "startDateTime": {
+		         "type": "string",
+		         "required": true
+		      },
+		      "endDateTime": {
+		         "type": "string",
+ 		         "required": true
+		      },
+		      "subject": {
+	          	"type": "string",
+	          	"required": true
+		      }
+		}
+ 	}    
+}

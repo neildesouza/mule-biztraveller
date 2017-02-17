@@ -1,0 +1,39 @@
+#%RAML 0.8
+title: biztraveller
+version: 1.0
+baseUri: https://biztraveller.co.uk/api
+
+schemas:
+  - sfdc_lead: !include schemas/sfdc_leads_schema.json
+  - event: !include schemas/event_schema.json
+ 
+/events:
+  displayName: Open request for information
+  get:
+    description: Get Information relating to the open request
+    responses:
+      200:
+        description: Order Create Successfully
+        body: 
+          application/json: 
+            schema: event
+        
+/customer_leads:
+  displayName: Customer Leads
+  get:
+    description: List of customer leads      
+    responses:
+      200:
+        description: Order Create Successfully
+        body:
+          application/json: 
+            example: !include ./examples/sfdc_leads_example.json
+            schema: sfdc_lead
+      404:
+        description: Error Retrieving Leads
+        body: 
+          application/json: 
+            example: | 
+              {
+                "errorMessage": "Could not retrieve Leads"
+              }

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+    <sfdc:config name="Salesforce__Basic_Authentication" username="neildesouza@yahoo.com" password="w2ZiNFQ5IV2t" securityToken="tSvy1q1pNFwbIjv3W0BzrcPjm" doc:name="Salesforce: Basic Authentication"/>
+    <http:request-config name="HTTP_Request_Configuration" protocol="HTTPS" host="www.googleapis.com" port="443" basePath="calendar/v3" doc:name="HTTP Request Configuration"/>
+    <sub-flow name="Salesforce_RetrieveLeadsSubFlow">
+        <sfdc:query config-ref="Salesforce__Basic_Authentication" query="dsql:SELECT City,Company,Email,FirstName,LastName,MobilePhone,Name,Phone,Title FROM Lead" doc:name="Salesforce"/>
+        <logger level="INFO" doc:name="Logger"/>
+    </sub-flow>
+    <sub-flow name="GoogleCalendar_RetriveEventsSubFlow">
+        <http:request config-ref="HTTP_Request_Configuration" path="/calendars/{calendarId}/events" method="GET" doc:name="Google Calendar Query">
+            <http:request-builder>
+                <http:query-param paramName="key" value="AIzaSyBOkL8-BqNbkHXCGRXmBX1OmvE85RaPmMQ"/>
+                <http:uri-param paramName="calendarId" value="61vfs8kbdfnkm5v2mi12saalfg%40group.calendar.google.com"/>
+            </http:request-builder>
+        </http:request>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:input-payload mimeType="application/json"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload.items map ((item , indexOfItem) -> {
+	startDateTime: item.start.dateTime,
+	endDateTime: item.end.dateTime,
+	subject: item.summary
+})]]></dw:set-payload>
+        </dw:transform-message>
+        <logger message="[#[payload]" level="INFO" doc:name="Logger"/>
+    </sub-flow>
+    <sub-flow name="Salesforce_RetriveEventsSubflow">
+        <sfdc:query config-ref="Salesforce__Basic_Authentication" query="dsql:SELECT AccountId,ActivityDate,Description,DurationInMinutes,EndDateTime,Location,OwnerId,StartDateTime,Subject,WhoId FROM Event" doc:name="Salesforce"/>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:input-payload mimeType="application/java"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload map ((payload01 , indexOfPayload01) -> {
+	endDateTime: payload01.EndDateTime as :string,
+	startDateTime: payload01.StartDateTime as :string,
+	subject: payload01.Subject as :string
+})]]></dw:set-payload>
+        </dw:transform-message>
+        <logger message="[#[payload]]" level="INFO" doc:name="Logger"/>
+    </sub-flow>
+</mule>

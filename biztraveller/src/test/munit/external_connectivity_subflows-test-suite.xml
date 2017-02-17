@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:mock="http://www.mulesoft.org/schema/mule/mock" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/mock http://www.mulesoft.org/schema/mule/mock/current/mule-mock.xsd">
+    <munit:config name="munit" doc:name="MUnit configuration"/>
+    <spring:beans>
+        <spring:import resource="classpath:external_connectivity_subflows.xml"/>
+    </spring:beans>
+    <munit:test name="external_connectivity_subflows-test-suite-Salesforce_RetrieveLeadsSubFlowTest" description="Test">
+        <flow-ref name="Salesforce_RetrieveLeadsSubFlow" doc:name="Flow-ref to Salesforce_RetrieveLeadsSubFlow"/>
+    </munit:test>
+    <munit:test name="external_connectivity_subflows-test-suite-GoogleCalendar_RetriveEventsSubFlowTest" description="Test">
+        <flow-ref name="GoogleCalendar_RetriveEventsSubFlow" doc:name="Flow-ref to GoogleCalendar_RetriveEventsSubFlow"/>
+    </munit:test>
+    <munit:test name="external_connectivity_subflows-test-suite-Salesforce_RetriveEventsSubflowTest" description="Test">
+        <mock:when messageProcessor=".*:.*" doc:name="Mock">
+            <mock:with-attributes>
+                <mock:with-attribute name="doc:name" whereValue="#['Salesforce']"/>
+            </mock:with-attributes>
+            <mock:then-return payload="#[]"/>
+        </mock:when>
+        <flow-ref name="Salesforce_RetriveEventsSubflow" doc:name="Salesforce_RetriveEventsSubflow"/>
+    </munit:test>
+</mule>

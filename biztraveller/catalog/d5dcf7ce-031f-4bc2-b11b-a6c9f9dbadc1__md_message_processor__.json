@@ -1,0 +1,23 @@
+{
+    "inputMessageMetadata": {
+        "messagePayload": {
+            "model": {
+                "connectorName": "Salesforce__Basic_Authentication",
+                "typeId": "Event"
+            },
+            "isArray": false,
+            "dataType": "LIST",
+            "metaDataModelPropertiesManager": {
+                "properties": []
+            }
+        }
+    },
+    "outputMessageMetadata": {
+        "messagePayload": {
+            "connectorName": "#_custom_mule_metadata_type_#",
+            "typeId": "BIzTraveller_Event"
+        }
+    },
+    "id": "d5dcf7ce-031f-4bc2-b11b-a6c9f9dbadc1",
+    "version": "5.2.0.0"
+}

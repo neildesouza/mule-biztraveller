@@ -1,0 +1,11 @@
+{
+    "inputMessageMetadata": {},
+    "outputMessageMetadata": {
+        "messagePayload": {
+            "connectorName": "#_custom_mule_metadata_type_#",
+            "typeId": "Google_Calendar_Events"
+        }
+    },
+    "id": "9c69adf9-3976-40eb-8e66-16428b301a5f",
+    "version": "5.2.0.0"
+}
