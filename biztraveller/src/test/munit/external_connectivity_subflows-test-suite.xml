@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:mock="http://www.mulesoft.org/schema/mule/mock" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:mock="http://www.mulesoft.org/schema/mule/mock" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/mock http://www.mulesoft.org/schema/mule/mock/current/mule-mock.xsd">
@@ -8,19 +8,52 @@ http://www.mulesoft.org/schema/mule/mock http://www.mulesoft.org/schema/mule/moc
     <spring:beans>
         <spring:import resource="classpath:external_connectivity_subflows.xml"/>
     </spring:beans>
-    <munit:test name="external_connectivity_subflows-test-suite-Salesforce_RetrieveLeadsSubFlowTest" description="Test">
-        <flow-ref name="Salesforce_RetrieveLeadsSubFlow" doc:name="Flow-ref to Salesforce_RetrieveLeadsSubFlow"/>
-    </munit:test>
-    <munit:test name="external_connectivity_subflows-test-suite-GoogleCalendar_RetriveEventsSubFlowTest" description="Test">
-        <flow-ref name="GoogleCalendar_RetriveEventsSubFlow" doc:name="Flow-ref to GoogleCalendar_RetriveEventsSubFlow"/>
-    </munit:test>
-    <munit:test name="external_connectivity_subflows-test-suite-Salesforce_RetriveEventsSubflowTest" description="Test">
+    <munit:test name="external_connectivity_subflows-test-suite-Salesforce_RetrieveLeadsSubFlowTest" description="Test" ignore="true">
         <mock:when messageProcessor=".*:.*" doc:name="Mock">
             <mock:with-attributes>
                 <mock:with-attribute name="doc:name" whereValue="#['Salesforce']"/>
             </mock:with-attributes>
-            <mock:then-return payload="#[]"/>
+            <mock:then-return payload="#[new uk.co.biztraveller.munit.mocks.SalesforceLeadMockGenerator().getCollectionWith5Leads()]"/>
+        </mock:when>
+        <flow-ref name="Salesforce_RetrieveLeadsSubflow" doc:name="Salesforce_RetrieveLeadsSubflow"/>
+        <munit:assert-on-equals message="Invalid number of elements returned" expectedValue="#[5]" actualValue="#[payload.size()]" doc:name="Assert Equals"/>
+    </munit:test>
+    <munit:test name="external_connectivity_subflows-test-suite-GoogleCalendar_RetriveEventsSubFlowTest" description="Test" ignore="true">
+        <mock:when messageProcessor=".*:.*" doc:name="Google Calendar Retrieve Mock">
+            <mock:with-attributes>
+                <mock:with-attribute name="doc:name" whereValue="#['Google Calendar Events Query']"/>
+            </mock:with-attributes>
+            <mock:then-return payload="#[getResource('google_event_mock.json').asStream()]" encoding="UTF-8" mimeType="application/json"/>
+        </mock:when>
+        <flow-ref name="GoogleCalendar_RetriveEventsSubflow" doc:name="GoogleCalendar_RetriveEventsSubflow"/>
+        <munit:assert-on-equals message="Incorrect number of events transformed" expectedValue="#[1]" actualValue="#[payload.size()]" doc:name="Assert Equals"/>
+    </munit:test>
+    <munit:test name="external_connectivity_subflows-test-suite-Salesforce_RetriveEventsSubflowTest" description="Test" ignore="true">
+        <mock:when messageProcessor=".*:.*" doc:name="Salesforce Retrieve Event Mock">
+            <mock:with-attributes>
+                <mock:with-attribute name="doc:name" whereValue="#['Salesforce Events Query']"/>
+            </mock:with-attributes>
+            <mock:then-return payload="#[new uk.co.biztraveller.munit.mocks.SalesforceEventMockGenerator().getCollectionWith5Events()]"/>
         </mock:when>
         <flow-ref name="Salesforce_RetriveEventsSubflow" doc:name="Salesforce_RetriveEventsSubflow"/>
+        <munit:assert-on-equals message="Incorrect number of events transformed" expectedValue="#[5]" actualValue="#[payload.size()]" doc:name="Assert Equals"/>
+    </munit:test>
+    <munit:test name="external_connectivity_subflows-test-suite-AggregateAndRetriveEventsSubflowTest" description="Test">        
+        <mock:when messageProcessor="mule:sub-flow" doc:name="Google Mock">
+            <mock:with-attributes>
+                <mock:with-attribute name="name" whereValue="#[matchContains('GoogleCalendar_RetriveEventsSubflow')]"/>
+            </mock:with-attributes>
+            <mock:then-return payload="#[new uk.co.biztraveller.munit.mocks.BizTravellerEventMockGenerator().getCollectionWith2GoogleEvents()]" mimeType="application/java"/>
+		</mock:when>
+		
+		<mock:when messageProcessor="mule:sub-flow" doc:name="Salesforce Mock">
+            <mock:with-attributes>
+                <mock:with-attribute name="name" whereValue="#[matchContains('Salesforce_RetriveEventsSubflow')]"/>
+            </mock:with-attributes>
+            <mock:then-return payload="#[new uk.co.biztraveller.munit.mocks.BizTravellerEventMockGenerator().getCollectionWith3SalesforceEvents()]" mimeType="application/java"/>
+		</mock:when>
+		    
+        <flow-ref name="AggregateAndRetriveEventsSubflow" doc:name="AggregateAndRetriveEventsSubflow"/>
+    	<munit:assert-on-equals message="Incorrect number of records" expectedValue="#[5]" actualValue="#[payload.size()]" doc:name="Assert Equals"/>
     </munit:test>
 </mule>

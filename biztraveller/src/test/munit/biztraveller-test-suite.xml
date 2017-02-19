@@ -1,13 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+<mule xmlns:mock="http://www.mulesoft.org/schema/mule/mock" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
-http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/mock http://www.mulesoft.org/schema/mule/mock/current/mule-mock.xsd">
     <munit:config name="munit" doc:name="MUnit configuration"/>
     <spring:beans>
         <spring:import resource="classpath:biztraveller.xml"/>
     </spring:beans>
-    <munit:test name="biztraveller-test-suite-get:/customer_leads:apiConfigTest" description="Test">
-        <flow-ref name="get:/customer_leads:apiConfig" doc:name="Flow-ref to get:/customer_leads:apiConfig"/>
+    <munit:test name="biztraveller-test-suite-get:/events:apiConfigTest" description="Test">
+        <mock:when messageProcessor="flow-ref" doc:name="Salesforce_RetriveEventsSubflow">
+            <mock:then-return payload="#[new uk.co.biztraveller.munit.mocks.BizTravellerEventMockGenerator().getCollectionWith3SalesforceEvents()]"/>
+        </mock:when>
+        <mock:when messageProcessor="flow-ref" doc:name="Salesforce_RetrieveLeadsSubflow">
+            <mock:then-return payload="#['test']"/>
+        </mock:when>
+        <mock:when messageProcessor="flow-ref" doc:name="GoogleCalendar_RetriveEventsSubFlow">
+            <mock:then-return payload="#[new uk.co.biztraveller.munit.mocks.BizTravellerEventMockGenerator().getCollectionWith2GoogleEvents()]"/>
+        </mock:when>
+        <flow-ref name="get:/events:apiConfig" doc:name="Flow-ref to get:/events:apiConfig"/>
+        <munit:assert-on-equals message="Incorrect number of records" expectedValue="#[6]" actualValue="#[payload.size()]" doc:name="Assert Equals"/>
     </munit:test>
 </mule>

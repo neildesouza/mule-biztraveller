@@ -11,10 +11,6 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
     <context:property-placeholder location="api.properties" />
     <http:listener-config name="httpListenerConfig" host="0.0.0.0" port="${http.port}" doc:name="HTTP Listener Configuration" />
     <apikit:config name="apiConfig" raml="api.raml" consoleEnabled="true" doc:name="Router" keepRamlBaseUri="false" consolePath="console"/>
-    
-    <spring:beans>
-        <spring:bean id="Bean" name="Bean" class="uk.co.biztraveller.transformers.EventsMergeAggregationStrategy" />
-    </spring:beans>
     <flow name="api-main">
         <http:listener config-ref="httpListenerConfig" path="/api/*" doc:name="HTTP" />
         <apikit:router config-ref="apiConfig" doc:name="APIkit Router" />
@@ -22,7 +18,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
     </flow>
     <flow name="get:/customer_leads:apiConfig">
         <logger message="Processing Query Leads" level="INFO" doc:name="Logger" />
-        <flow-ref name="Salesforce_RetrieveLeadsSubFlow" doc:name="Flow Reference"/>
+        <flow-ref name="Salesforce_RetrieveLeadsSubflow" doc:name="Salesforce_RetrieveLeadsSubflow"/>
         <exception-strategy ref="biztraveller_Dataweave_ExceptionStrategy" doc:name="Reference Exception Strategy"/>
     </flow>
     <choice-exception-strategy name="biztraveller_Dataweave_ExceptionStrategy">
@@ -32,17 +28,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
     </choice-exception-strategy>
     <flow name="get:/events:apiConfig">
         <logger message="Getting Events" level="INFO" doc:name="Logger" />
-        <scatter-gather doc:name="Scatter-Gather">
-            <custom-aggregation-strategy ref="Bean" />
-            <processor-chain>
-                <logger level="INFO" doc:name="Logger"/>
-                <flow-ref name="GoogleCalendar_RetriveEventsSubFlow" doc:name="Flow Reference"/>
-            </processor-chain>
-            <processor-chain>
-                <logger message="Getting Events from Salesforce..." level="INFO" doc:name="Logger" />
-                <flow-ref name="Salesforce_RetriveEventsSubflow" doc:name="Flow Reference"/>
-            </processor-chain>
-        </scatter-gather>
+        <flow-ref name="AggregateAndRetriveEventsSubflow" doc:name="AggregateAndRetriveEventsSubflow"/>
         <exception-strategy ref="biztraveller_Dataweave_ExceptionStrategy" doc:name="Reference Exception Strategy"/>
     </flow>
     <apikit:mapping-exception-strategy name="apiKitGlobalExceptionMapping">

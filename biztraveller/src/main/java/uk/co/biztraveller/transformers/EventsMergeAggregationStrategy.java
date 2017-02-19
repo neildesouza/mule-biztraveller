@@ -9,7 +9,6 @@
 package uk.co.biztraveller.transformers;
 
 import java.util.List;
-import java.util.Map;
 
 import org.mule.DefaultMuleEvent;
 import org.mule.api.MuleEvent;
@@ -47,7 +46,7 @@ public class EventsMergeAggregationStrategy implements AggregationStrategy {
 		
 		googleEvents.addAll(salesforceEvents);
 
-		message.setPayload(googleEvents.iterator());
+		message.setPayload(googleEvents);
 
 		return new DefaultMuleEvent(message, originalEvent);
 	}

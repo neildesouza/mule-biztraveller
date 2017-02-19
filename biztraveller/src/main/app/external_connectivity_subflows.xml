@@ -1,24 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
     <sfdc:config name="Salesforce__Basic_Authentication" username="neildesouza@yahoo.com" password="w2ZiNFQ5IV2t" securityToken="tSvy1q1pNFwbIjv3W0BzrcPjm" doc:name="Salesforce: Basic Authentication"/>
     <http:request-config name="HTTP_Request_Configuration" protocol="HTTPS" host="www.googleapis.com" port="443" basePath="calendar/v3" doc:name="HTTP Request Configuration"/>
-    <sub-flow name="Salesforce_RetrieveLeadsSubFlow">
-        <sfdc:query config-ref="Salesforce__Basic_Authentication" query="dsql:SELECT City,Company,Email,FirstName,LastName,MobilePhone,Name,Phone,Title FROM Lead" doc:name="Salesforce"/>
+    <spring:beans>
+        <spring:bean id="EventAggregationBean" name="EventAggregationBean" class="uk.co.biztraveller.transformers.EventsMergeAggregationStrategy"/>
+    </spring:beans>
+    <sub-flow name="AggregateAndRetriveEventsSubflow">
+        <scatter-gather doc:name="Scatter-Gather">
+            <custom-aggregation-strategy ref="EventAggregationBean"/>
+            <processor-chain>
+                <logger level="INFO" doc:name="Logger"/>
+                <flow-ref name="GoogleCalendar_RetriveEventsSubflow" doc:name="GoogleCalendar_RetriveEventsSubflow"/>
+            </processor-chain>
+            <processor-chain>
+                <logger message="Getting Events from Salesforce..." level="INFO" doc:name="Logger"/>
+                <flow-ref name="Salesforce_RetriveEventsSubflow" doc:name="Salesforce_RetriveEventsSubflow"/>
+            </processor-chain>
+        </scatter-gather>
+    </sub-flow>
+    <sub-flow name="Salesforce_RetrieveLeadsSubflow">
+        <sfdc:query config-ref="Salesforce__Basic_Authentication" query="dsql:SELECT City,Company,Email,FirstName,LastName,MobilePhone,Title FROM Lead" doc:name="Salesforce"/>
+        <dw:transform-message metadata:id="1d619041-3a1b-4e82-8949-b1b415406114" doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload map ((payload01 , indexOfPayload01) -> {
+	city: payload01.City,
+	company: payload01.Company,
+	emailAddress: payload01.Email,
+	firstName: payload01.FirstName,
+	lastName: payload01.LastName,
+	mobilePhone: payload01.MobilePhone,
+	title: payload01.Title
+} as :object {
+	class : "uk.co.biztraveller.model.Lead"
+})]]></dw:set-payload>
+        </dw:transform-message>
         <logger level="INFO" doc:name="Logger"/>
     </sub-flow>
-    <sub-flow name="GoogleCalendar_RetriveEventsSubFlow">
+    <sub-flow name="GoogleCalendar_RetriveEventsSubflow">
         <http:request config-ref="HTTP_Request_Configuration" path="/calendars/{calendarId}/events" method="GET" doc:name="Google Calendar Query">
             <http:request-builder>
                 <http:query-param paramName="key" value="AIzaSyBOkL8-BqNbkHXCGRXmBX1OmvE85RaPmMQ"/>
                 <http:uri-param paramName="calendarId" value="61vfs8kbdfnkm5v2mi12saalfg%40group.calendar.google.com"/>
             </http:request-builder>
         </http:request>
-        <dw:transform-message doc:name="Transform Message">
+        <logger level="INFO" doc:name="Logger"/>
+        <dw:transform-message doc:name="Transform Message" metadata:id="1f33c63e-89e5-45ff-84fc-cfeb1ed1b9b1">
             <dw:input-payload mimeType="application/json"/>
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/java
@@ -26,22 +59,28 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 payload.items map ((item , indexOfItem) -> {
 	startDateTime: item.start.dateTime,
 	endDateTime: item.end.dateTime,
-	subject: item.summary
+	subject: item.summary,
+	location: item.location,
+	eventSourceSystem: "GOOGLE_CALENDAR"
 })]]></dw:set-payload>
         </dw:transform-message>
         <logger message="[#[payload]" level="INFO" doc:name="Logger"/>
     </sub-flow>
     <sub-flow name="Salesforce_RetriveEventsSubflow">
-        <sfdc:query config-ref="Salesforce__Basic_Authentication" query="dsql:SELECT AccountId,ActivityDate,Description,DurationInMinutes,EndDateTime,Location,OwnerId,StartDateTime,Subject,WhoId FROM Event" doc:name="Salesforce"/>
-        <dw:transform-message doc:name="Transform Message">
+        <sfdc:query config-ref="Salesforce__Basic_Authentication" query="dsql:SELECT Description,EndDateTime,Location,StartDateTime,Subject FROM Event" doc:name="Salesforce"/>
+        <dw:transform-message doc:name="Transform Message" metadata:id="23bc4a68-b7a9-4993-9b98-baf1c5269682">
             <dw:input-payload mimeType="application/java"/>
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/java
 ---
 payload map ((payload01 , indexOfPayload01) -> {
 	endDateTime: payload01.EndDateTime as :string,
+	location: payload01.Location,
 	startDateTime: payload01.StartDateTime as :string,
-	subject: payload01.Subject as :string
+	subject: payload01.Subject as :string,
+	eventSourceSystem: "SALESFORCE"
+} as :object {
+	class : "uk.co.biztraveller.model.Event"
 })]]></dw:set-payload>
         </dw:transform-message>
         <logger message="[#[payload]]" level="INFO" doc:name="Logger"/>
