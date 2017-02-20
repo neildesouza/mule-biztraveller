@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+    <choice-exception-strategy name="StandardExceptionStrategy">
+        <catch-exception-strategy when="#[exception.causedBy(java.lang.IllegalStateException)]" doc:name="No endpoints Available Exception">
+            <logger level="INFO" doc:name="Logger"/>
+            <set-property propertyName="http.status" value="500" doc:name="Property"/>
+            <set-payload value="{&quot;message&quot; : #[exception.cause.message] }" doc:name="Set Payload"/>
+        </catch-exception-strategy>
+        <catch-exception-strategy when="#[exception.causedBy(org.mule.api.ConnectionException) &amp;&amp; exception.cause.code==org.mule.api.ConnectionExceptionCode.INCORRECT_CREDENTIALS]" doc:name="Connection Exception Strategy">
+            <logger level="INFO" doc:name="Logger"/>
+            <set-property propertyName="http.status" value="401" doc:name="Property"/>
+            <set-payload value="{&quot;message&quot; : #[exception.cause.message] }" doc:name="Set Payload"/>
+        </catch-exception-strategy>
+        <catch-exception-strategy when="#[exception.causedBy(org.mule.api.MessagingException)]" doc:name="Mule Messaging Generic Exception Strategy">
+            <logger level="INFO" doc:name="Logger"/>
+            <set-property propertyName="http.status" value="500" doc:name="Property"/>
+            <set-payload value="{ &quot;message&quot;: &quot;Could not retrieve Leads&quot; }" doc:name="Set Payload"/>
+        </catch-exception-strategy>
+        <catch-exception-strategy doc:name="Default Exception Handler">
+            <logger message="Default exception handler catch all." level="ERROR" doc:name="Log Default Catch-All to Console"/>
+            <set-property propertyName="http.status" value="404" doc:name="Set Property"/>
+            <set-payload value="{ &quot;message&quot;: &quot;Could not retrieve Leads&quot; }" doc:name="Set Payload"/>
+        </catch-exception-strategy>
+    </choice-exception-strategy>
+</mule>

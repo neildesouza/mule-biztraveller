@@ -1,0 +1,17 @@
+{
+  "events": [
+    {
+      "end_date_time": "2017-02-17T03:30:00+13:00",
+      "source": "GOOGLE_CALENDAR",
+      "start_date_time": "2017-02-17T02:30:00+13:00",
+      "subject": "Event A"
+    },
+    {
+      "end_date_time": "2017-02-16T00:00:00.000Z",
+      "source": "SALESFORCE",
+      "start_date_time": "2017-02-16T00:00:00.000Z",
+      "subject": "Follow up on Lead: Dave Dobbin"
+    }
+  ],
+  "result_type": "full"
+}

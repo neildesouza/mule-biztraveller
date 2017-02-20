@@ -1,0 +1,11 @@
+{
+    "inputMessageMetadata": {},
+    "outputMessageMetadata": {
+        "messagePayload": {
+            "connectorName": "#_custom_mule_metadata_type_#",
+            "typeId": "BizTraveller_LeadResponse"
+        }
+    },
+    "id": "fc5dfc16-eb1a-4241-a08f-b61d1c564648",
+    "version": "5.2.0.0"
+}

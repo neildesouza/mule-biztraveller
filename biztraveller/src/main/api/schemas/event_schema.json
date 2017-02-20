@@ -1,27 +1,24 @@
-{  
- 	"$schema": "http://json-schema.org/draft-03/schema",
- 	"title":"Event List",
- 	"type": "array",
- 	"items": {
- 		"title":"Event",
- 		"type":"object",
- 		"properties": {
-		      "startDateTime": {
-		         "type": "string",
-		         "required": true
-		      },
-		      "endDateTime": {
-		         "type": "string",
- 		         "required": true
-		      },
-		      "subject": {
-	          	"type": "string",
-	          	"required": true
-		      },
-		      "eventSourceSystem": {
-	          	"type": "string",
-	          	"required": true
-		      }
-		}
- 	}    
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "events": {
+      "type": "array",
+      "items": {
+        "title": "Event",
+        "type": "object",
+        "properties": {
+          "start_date_time": { "type": "string" },
+          "end_date_time": { "type": "string" },
+          "subject": { "type": "string" },
+          "source": { "type": "string" }
+        },
+        "required": [ "start_date_time", "end_date_time", "subject", "source" ]
+      }
+     }
+   },
+   "type": "object",
+   "properties": {
+      "result_type": { "enum": [ "partial", "full" ] },
+      "events": { "$ref": "#/definitions/events" }
+   }
 }

@@ -8,32 +8,69 @@ schemas:
   - event: !include schemas/event_schema.json
  
 /events:
-  displayName: Open request for information
+  displayName: Retrieve Events
   get:
-    description: Get Information relating to the open request
+    description: | 
+      Retrieve List of events from Salesforce and Google calendar.
+      * If both Salesforce and Google available, result_type = full
+      * if only one system is available, result_type=partial
+      * If no systems are available, an error is thrown, and a 500 is returned
     responses:
       200:
-        description: Order Create Successfully
+        description: OK
         body: 
           application/json: 
+            example: !include ./examples/sfdc_google_events_example.json
             schema: event
+      401:
+        description: Invalid credentials
+        body:
+          appliation/json:
+            example: | 
+              {
+                "message": "Invalid Credentials"
+              }         
+      404:
+        description: Error Retrieving Event
+        body: 
+          application/json: 
+            example: | 
+              {
+                "message": "Could not retrieve Leads"
+              }
+      500:
+        description: Error Retrieving Events from Salesforce and Google Calendar
+        body: 
+          application/json: 
+            example: | 
+              {
+                "message": "Cannot reach Salesforce or Google Calendar to retrieve events"
+              }
         
 /customer_leads:
-  displayName: Customer Leads
+  displayName: Retrieve Customer Leads
   get:
-    description: List of customer leads      
+    description: Retrieve List of customer leads from Salesforce
     responses:
       200:
-        description: Order Create Successfully
+        description: OK
         body:
           application/json: 
             example: !include ./examples/sfdc_leads_example.json
             schema: sfdc_lead
+      401:
+        description: Invalid credentials
+        body:
+          appliation/json:
+            example: | 
+              {
+                "message": "Invalid Credentials"
+              }         
       404:
         description: Error Retrieving Leads
         body: 
           application/json: 
             example: | 
               {
-                "errorMessage": "Could not retrieve Leads"
+                "message": "Could not retrieve Leads"
               }

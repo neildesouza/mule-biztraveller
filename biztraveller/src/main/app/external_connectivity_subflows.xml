@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+<mule xmlns:context="http://www.springframework.org/schema/context"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
-    <sfdc:config name="Salesforce__Basic_Authentication" username="neildesouza@yahoo.com" password="w2ZiNFQ5IV2t" securityToken="tSvy1q1pNFwbIjv3W0BzrcPjm" doc:name="Salesforce: Basic Authentication"/>
-    <http:request-config name="HTTP_Request_Configuration" protocol="HTTPS" host="www.googleapis.com" port="443" basePath="calendar/v3" doc:name="HTTP Request Configuration"/>
+    <sfdc:config name="Salesforce__Basic_Authentication" username="${sfdc.username}" password="${sfdc.password}" securityToken="${sfdc.securityToken}" doc:name="Salesforce: Basic Authentication" url="${sfdc.url}" connectionTimeout="5000" readTimeout="5000"/>
+    <http:request-config name="Google_HTTP_Config" protocol="HTTPS" host="${googleapi.url}" port="${googleapi.port}" basePath="${googleapi.calendar.basepath}" doc:name="HTTP Request Configuration" responseTimeout="5000"/>
     <spring:beans>
         <spring:bean id="EventAggregationBean" name="EventAggregationBean" class="uk.co.biztraveller.transformers.EventsMergeAggregationStrategy"/>
     </spring:beans>
@@ -44,14 +46,15 @@ payload map ((payload01 , indexOfPayload01) -> {
         <logger level="INFO" doc:name="Logger"/>
     </sub-flow>
     <sub-flow name="GoogleCalendar_RetriveEventsSubflow">
-        <http:request config-ref="HTTP_Request_Configuration" path="/calendars/{calendarId}/events" method="GET" doc:name="Google Calendar Query">
+        <http:request config-ref="Google_HTTP_Config" path="/calendars/{calendarId}/events" method="GET" doc:name="Google Calendar Query">
             <http:request-builder>
-                <http:query-param paramName="key" value="AIzaSyBOkL8-BqNbkHXCGRXmBX1OmvE85RaPmMQ"/>
-                <http:uri-param paramName="calendarId" value="61vfs8kbdfnkm5v2mi12saalfg%40group.calendar.google.com"/>
+                <http:query-param paramName="key" value="${googleapi.securityToken}"/>
+                <http:uri-param paramName="calendarId" value="${googleapi.calendar.id}"/>
             </http:request-builder>
+            <http:success-status-code-validator values="200"/>
         </http:request>
         <logger level="INFO" doc:name="Logger"/>
-        <dw:transform-message doc:name="Transform Message" metadata:id="1f33c63e-89e5-45ff-84fc-cfeb1ed1b9b1">
+        <dw:transform-message metadata:id="1f33c63e-89e5-45ff-84fc-cfeb1ed1b9b1" doc:name="Transform Message">
             <dw:input-payload mimeType="application/json"/>
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/java

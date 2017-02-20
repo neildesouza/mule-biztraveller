@@ -1,0 +1,22 @@
+{
+    "inputMessageMetadata": {
+        "messagePayload": {
+            "connectorName": "#_custom_mule_metadata_type_#",
+            "typeId": "BIzTraveller_Event"
+        },
+        "sessionVariables": {
+            "search_result": {
+                "connectorName": "#_custom_mule_metadata_type_#",
+                "typeId": "search_result"
+            }
+        }
+    },
+    "outputMessageMetadata": {
+        "messagePayload": {
+            "connectorName": "#_custom_mule_metadata_type_#",
+            "typeId": "BizTraveller_EventResponse"
+        }
+    },
+    "id": "df9eb5c3-2bb8-4104-9678-5d96a2aa5db8",
+    "version": "5.2.0.0"
+}

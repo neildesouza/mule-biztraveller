@@ -1,10 +1,13 @@
 {
-    "name": "Joe Bloggs",
-    "company":"Test Company",
-    "title":"Mr. "
-    "email": "joebloggs@mail.com",
-    "phone": "072873818192",
-    "city": "San Francisco",
-    "country": "US",
-    "postalCode": "94131"
+  "leads": [
+    {
+      "city": "London",
+      "company": "UBS",
+      "email": "davedobbin@gmail.com",
+      "first_name": "Dave",
+      "last_name": "Dobbin",
+      "phone": 017321881,
+      "title": "Mr"
+    }
+  ]
 }

@@ -1,41 +1,26 @@
-{  
- 	"type": "object",
-    "$schema": "http://json-schema.org/draft-03/schema",
-    "id": "http://jsonschema.net",
-    "required": true,
-    "properties": {
-      "name": {
-          "type": "string",
-          "required": true
-      },
-      "company": {
-          "type": "string",
-          "required": true
-      },
-      "title": {
-          "type": "string",
-          "required": true
-      },
-      "email": {
-          "type": "string",
-          "format": "email",
-          "required": true
-      },
-      "phone": {
-          "type": "string",
-          "required": false
-      },
-      "city": {
-          "type": "string",
-          "required": false
-      },
-      "country": {
-        "type": "string",
-        "required": false
-      },
-      "postalCode": {
-        "type": "string",
-        "required": false
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "leads": {
+      "type": "array",
+      "items": {
+        "title": "Lead",
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "first_name": { "type": "string" },         
+          "last_name": { "type": "string" },
+          "company": { "type": "string" },
+          "email": { "type": "string" },
+          "phone": { "type": "string" },
+          "city": { "type": "string" }
+        },
+        "required": [ "first_name", "last_name", "company", "title", "email" ]
       }
-    }
+     }
+   },
+   "type": "object",
+   "properties": {
+      "leads": { "$ref": "#/definitions/leads" }
+   }
 }

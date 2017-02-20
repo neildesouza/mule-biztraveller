@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit" xmlns:context="http://www.springframework.org/schema/context" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:secure-property-placeholder="http://www.mulesoft.org/schema/mule/secure-property-placeholder" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit" xmlns:context="http://www.springframework.org/schema/context" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd
 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
@@ -7,10 +7,14 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
-http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
-    <context:property-placeholder location="api.properties" />
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/secure-property-placeholder http://www.mulesoft.org/schema/mule/secure-property-placeholder/current/mule-secure-property-placeholder.xsd">
+    <secure-property-placeholder:config name="Secure_Property_Placeholder" encryptionAlgorithm="Blowfish" key="samplekey" location="mule.config.properties,api.properties" doc:name="Secure Property Placeholder"/>
+    <context:property-placeholder location="api.properties,mule.config.properties"/>
+     
     <http:listener-config name="httpListenerConfig" host="0.0.0.0" port="${http.port}" doc:name="HTTP Listener Configuration" />
     <apikit:config name="apiConfig" raml="api.raml" consoleEnabled="true" doc:name="Router" keepRamlBaseUri="false" consolePath="console"/>
+    
     <flow name="api-main">
         <http:listener config-ref="httpListenerConfig" path="/api/*" doc:name="HTTP" />
         <apikit:router config-ref="apiConfig" doc:name="APIkit Router" />
@@ -19,17 +23,44 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
     <flow name="get:/customer_leads:apiConfig">
         <logger message="Processing Query Leads" level="INFO" doc:name="Logger" />
         <flow-ref name="Salesforce_RetrieveLeadsSubflow" doc:name="Salesforce_RetrieveLeadsSubflow"/>
-        <exception-strategy ref="biztraveller_Dataweave_ExceptionStrategy" doc:name="Reference Exception Strategy"/>
+        <dw:transform-message metadata:id="fc5dfc16-eb1a-4241-a08f-b61d1c564648" doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	leads: payload map ((payload01 , indexOfPayload01) -> {
+		city: payload01.city,
+		company: payload01.company,
+		email: payload01.emailAddress,
+		first_name: payload01.firstName,
+		last_name: payload01.lastName,
+		phone: payload01.mobilePhone,
+		title: payload01.title
+	})
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <exception-strategy ref="StandardExceptionStrategy" doc:name="Reference Exception Strategy"/>
     </flow>
-    <choice-exception-strategy name="biztraveller_Dataweave_ExceptionStrategy">
-        <catch-exception-strategy when="#[exception.causedBy(com.mulesoft.weave.mule.exception.WeaveExecutionException)]" doc:name="Dataweave Exception Strategy">
-            <logger message="Dataweave Exception" level="INFO" doc:name="Logger"/>
-        </catch-exception-strategy>
-    </choice-exception-strategy>
     <flow name="get:/events:apiConfig">
         <logger message="Getting Events" level="INFO" doc:name="Logger" />
         <flow-ref name="AggregateAndRetriveEventsSubflow" doc:name="AggregateAndRetriveEventsSubflow"/>
-        <exception-strategy ref="biztraveller_Dataweave_ExceptionStrategy" doc:name="Reference Exception Strategy"/>
+        <dw:transform-message metadata:id="df9eb5c3-2bb8-4104-9678-5d96a2aa5db8" doc:name="Transform Message">
+            <dw:input-payload mimeType="application/java"/>
+            <dw:input-session-variable mimeType="application/java" variableName="search_result"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	events: payload map ((payload01 , indexOfPayload01) -> {
+		end_date_time: payload01.endDateTime,
+		source: payload01.eventSourceSystem,
+		start_date_time: payload01.startDateTime,
+		subject: payload01.subject
+	}),
+	result_type: sessionVars.search_result
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <exception-strategy ref="StandardExceptionStrategy" doc:name="Reference Exception Strategy"/>
     </flow>
     <apikit:mapping-exception-strategy name="apiKitGlobalExceptionMapping">
         <apikit:mapping statusCode="404">
@@ -57,5 +88,6 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
             <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
             <set-payload value="{ &quot;message&quot;: &quot;Bad request&quot; }" doc:name="Set Payload" />
         </apikit:mapping>
+
     </apikit:mapping-exception-strategy>
 </mule>
