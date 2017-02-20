@@ -17,8 +17,8 @@ Application plugins:
 - mule-module-security-property-placeholder-1.4.0               
 - mule-module-sfdc-8.1.0  
 
-*Google Calendar:*
-public calendar created for exercise:
-https://calendar.google.com/calendar/embed?src=61vfs8kbdfnkm5v2mi12saalfg%40group.calendar.google.com&ctz=Pacific/Auckland%22%20style=%22border:%200%22%20width=%22800%22%20height=%22600%22%20frameborder=%220%22%20scrolling=%22no%22
+Google Calendar:
 
+public calendar created for exercise:
+- https://calendar.google.com/calendar/embed?src=61vfs8kbdfnkm5v2mi12saalfg%40group.calendar.google.com&ctz=Pacific/Auckland%22%20style=%22border:%200%22%20width=%22800%22%20height=%22600%22%20frameborder=%220%22%20scrolling=%22no%22
 
