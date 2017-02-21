@@ -8,8 +8,8 @@ http://www.mulesoft.org/schema/mule/mock http://www.mulesoft.org/schema/mule/moc
     <spring:beans>
         <spring:import resource="classpath:external_connectivity_subflows.xml"/>
     </spring:beans>
-    <munit:test name="external_connectivity_subflows-test-suite-Salesforce_RetrieveLeadsSubFlowTest" description="Test" ignore="true">
-        <mock:when messageProcessor=".*:.*" doc:name="Mock">
+    <munit:test name="external_connectivity_subflows-test-suite-Salesforce_RetrieveLeadsSubFlowTest" description="Test" >
+        <mock:when messageProcessor=".*:.*" doc:name="Salesforce Retrieve Leads Mock">
             <mock:with-attributes>
                 <mock:with-attribute name="doc:name" whereValue="#['Salesforce']"/>
             </mock:with-attributes>
@@ -18,20 +18,20 @@ http://www.mulesoft.org/schema/mule/mock http://www.mulesoft.org/schema/mule/moc
         <flow-ref name="Salesforce_RetrieveLeadsSubflow" doc:name="Salesforce_RetrieveLeadsSubflow"/>
         <munit:assert-on-equals message="Invalid number of elements returned" expectedValue="#[5]" actualValue="#[payload.size()]" doc:name="Assert Equals"/>
     </munit:test>
-    <munit:test name="external_connectivity_subflows-test-suite-GoogleCalendar_RetriveEventsSubFlowTest" description="Test" ignore="true">
+    <munit:test name="external_connectivity_subflows-test-suite-GoogleCalendar_RetriveEventsSubFlowTest" description="Test" >
         <mock:when messageProcessor=".*:.*" doc:name="Google Calendar Retrieve Mock">
             <mock:with-attributes>
-                <mock:with-attribute name="doc:name" whereValue="#['Google Calendar Events Query']"/>
+                <mock:with-attribute name="doc:name" whereValue="#['Google Calendar Query']"/>
             </mock:with-attributes>
             <mock:then-return payload="#[getResource('google_event_mock.json').asStream()]" encoding="UTF-8" mimeType="application/json"/>
         </mock:when>
         <flow-ref name="GoogleCalendar_RetriveEventsSubflow" doc:name="GoogleCalendar_RetriveEventsSubflow"/>
         <munit:assert-on-equals message="Incorrect number of events transformed" expectedValue="#[1]" actualValue="#[payload.size()]" doc:name="Assert Equals"/>
     </munit:test>
-    <munit:test name="external_connectivity_subflows-test-suite-Salesforce_RetriveEventsSubflowTest" description="Test" ignore="true">
+    <munit:test name="external_connectivity_subflows-test-suite-Salesforce_RetriveEventsSubflowTest" description="Test" >
         <mock:when messageProcessor=".*:.*" doc:name="Salesforce Retrieve Event Mock">
             <mock:with-attributes>
-                <mock:with-attribute name="doc:name" whereValue="#['Salesforce Events Query']"/>
+                <mock:with-attribute name="doc:name" whereValue="#['Salesforce']"/>
             </mock:with-attributes>
             <mock:then-return payload="#[new uk.co.biztraveller.munit.mocks.SalesforceEventMockGenerator().getCollectionWith5Events()]"/>
         </mock:when>
